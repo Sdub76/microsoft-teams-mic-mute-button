@@ -1,11 +1,10 @@
-// Teams Physical Mute Button
+// MS Teams Physical Mute Button
 //
 // Double-Tap to send Mute/Unmute command (Ctl+Shift+M)
 // Long-press while muted to send hold-to-unmute command (Ctl+Space)
 //
+// Print parts in translucent PLA so you can see LEDs
  
-#define DEBUG 1
-
 
 // Use ButtonEvents Library (Depends on Bounce2 Library)
 // https://github.com/fasteddy516/ButtonEvents
@@ -16,6 +15,7 @@
 
 const byte buttonPin = 8;  // Button is connected to pin 8
 const byte ledPin    = 17; // LED is connected to pin 17 (RXLED)
+
 #define LED_OFF  1
 #define LED_ON   0
 
@@ -24,70 +24,79 @@ ButtonEvents myButton; // create an instance of the ButtonEvents class to attach
 #define MUTE_OFF      0  // Mute off
 #define MUTE_ON       1  // Mute on
 #define MUTE_OVERRIDE 2  // Mute off temporarily
-int mute_state = MUTE_ON;
+
+int mute_state = MUTE_OFF; // Default to "mute" off state.  Manually sync Teams with button state after starting meeting
 
 void setup() {
   
-  // attach our ButtonEvents instance to the button pin
   pinMode(buttonPin, INPUT_PULLUP);  
   myButton.attach(buttonPin);
 
-  // Setup the output LED.
   pinMode(ledPin, OUTPUT);
 
   Keyboard.begin();
 
 }
 
-void mute_toggle () {
-  Keyboard.press(KEY_LEFT_CTRL);
+void keyboard_mute_toggle () {
+  //Keyboard.press(KEY_LEFT_GUI); // Mac
+  Keyboard.press(KEY_LEFT_CTRL); // Windows
   Keyboard.press(KEY_LEFT_SHIFT);
   Keyboard.press('m');
 }
 
-void mute_override () {
-  Keyboard.press(KEY_LEFT_CTRL);
+void keyboard_mute_override () {
+  //Keyboard.press(KEY_LEFT_GUI); // Mac
+  Keyboard.press(KEY_LEFT_CTRL); // Windows
   Keyboard.press(' ');
 }
 
-// this is the main loop, which will repeat forever
+void leds_off () {
+  digitalWrite(ledPin, true);
+  TXLED0; // Can't write to pin... need to use built-in macro
+}
+
+void leds_on () {
+  digitalWrite(ledPin, false);
+  TXLED1; // Can't write to pin... need to use built-in macro
+}
+
 void loop() {
-  // the update() method is where all the magic happens - it needs to be called regularly in order
-  // to function correctly, so it should be part of the main loop.  
+
   myButton.update();
-  
+
+  // Three states... off, on, and temp override
   switch (mute_state)
   {
     case MUTE_OFF:
-      digitalWrite(ledPin, LED_OFF);
-      TXLED0;
+      leds_off();
       if (myButton.doubleTapped()) {
         // Double Tapped - Mute On
         mute_state = MUTE_ON;
-        mute_toggle();
+        keyboard_mute_toggle();
         delay(100);
         Keyboard.releaseAll();
       }
       break;
+      
     case MUTE_ON:
-      digitalWrite(ledPin, LED_ON);
-      TXLED1;
+      leds_on();
       if (myButton.doubleTapped()) {
         // Double Tapped - Mute Off
         mute_state = MUTE_OFF;
-        mute_toggle();
+        keyboard_mute_toggle();
         delay(100);
         Keyboard.releaseAll();
       }
       else if (myButton.held()) {
         // Hold - Mute Temporarily Off
         mute_state = MUTE_OVERRIDE;
-        mute_override();
+        keyboard_mute_override();
       }
       break;
+      
     case MUTE_OVERRIDE:
-      digitalWrite(ledPin, LED_OFF);
-      TXLED0;
+      leds_off();
       if (myButton.rose()) {
         // Hold Released - Mute On
         mute_state = MUTE_ON;
