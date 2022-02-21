@@ -16,9 +16,6 @@
 const byte buttonPin = 8;  // Button is connected to pin 8
 const byte ledPin    = 17; // LED is connected to pin 17 (RXLED)
 
-#define LED_OFF  1
-#define LED_ON   0
-
 ButtonEvents myButton; // create an instance of the ButtonEvents class to attach to our button
 
 #define MUTE_OFF      0  // Mute off
