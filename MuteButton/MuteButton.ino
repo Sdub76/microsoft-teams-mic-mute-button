@@ -12,9 +12,8 @@
 #include <HID.h>
 #include <Keyboard.h>
 
-
 const byte buttonPin = 8;  // Button is connected to pin 8
-const byte ledPin    = 17; // LED is connected to pin 17 (RXLED)
+const byte RXLED     = 17; // LED is connected to pin 17 (RXLED)
 
 ButtonEvents myButton; // create an instance of the ButtonEvents class to attach to our button
 
@@ -29,7 +28,7 @@ void setup() {
   pinMode(buttonPin, INPUT_PULLUP);  
   myButton.attach(buttonPin);
 
-  pinMode(ledPin, OUTPUT);
+  pinMode(RXLED, OUTPUT);
 
   Keyboard.begin();
 
@@ -49,12 +48,12 @@ void keyboard_mute_override () {
 }
 
 void leds_off () {
-  digitalWrite(ledPin, true);
+  digitalWrite(RXLED, true);
   TXLED0; // Can't write to pin... need to use built-in macro
 }
 
 void leds_on () {
-  digitalWrite(ledPin, false);
+  digitalWrite(RXLED, false);
   TXLED1; // Can't write to pin... need to use built-in macro
 }
 
